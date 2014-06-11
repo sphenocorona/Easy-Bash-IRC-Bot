@@ -1,4 +1,5 @@
 #!/bin/bash
+# This section is mostly the same as the Newbrict version, except for bits that I found to be annoying... especially the syntax for bot commands.
 
 . bot.properties
 input=".bot.cfg"
