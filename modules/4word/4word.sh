@@ -1,6 +1,7 @@
-# A "Change one letter at a time" game implementation for an IRC bot. Rules on word choices are almost entirely enforced by the bot, while rules on winning are left to the players.
-
-wordhist="wordhist.cfg"
+# A "Change one letter at a time" game implementation for an IRC bot. Rules are enforced by the IRC bot and method of deciding 'winner' is determined by players.
+# The variable 'modulename" must match the file name of this script, minus the ending '.sh'. Avoid giving this module a 4 letter word name that is in lowercase, as other wise this will interfere.
+modulename="4word"
+wordhist="wordhist.dat"
 
 # Get the last word from history
 lastword="$(tail -n 1 $wordhist)"
@@ -13,14 +14,14 @@ then
   if [ "$lastword" = "" ] || [ -z "$lastword" ]
   then
     echo "PRIVMSG $2 There is no currently running game at this time. Why not make one?"
-   
+    
     # Otherwise, display the most recent word
   else
     echo "PRIVMSG $2 Current Word: $lastword"
   fi
 
 else # If a word has been given
-  
+
   # Check to see if the word has capital letters, and if it does...
   if [ "$(echo "$3" | grep -c [A-Z])" = "1" ]
   then
@@ -31,13 +32,14 @@ else # If a word has been given
       echo "PRIVMSG $2 Game Ended. Last Word: $lastword"
       continue
     fi
+
     # If the word is "HELP" say help stuff
     if [ "$3" = "HELP" ]
     then
-      echo "PRIVMSG $2 Allowed arguments: END to end game, HELP to display this, INFO to display current word, and any lowercase four letter word to play!"
+      echo "PRIVMSG $2 Allowed arguments: END (in caps) to end game, HELP to display this, INFO to display current word, and any lowercase four letter word to play!"
       continue
     fi
-    
+
     # If not continuing past this section, tell the player to not use caps
     echo "PRIVMSG $2 Because bash commands are cAse-SensItIVe, please type words in lowercase only. Thanks!"
   else
@@ -47,9 +49,9 @@ else # If a word has been given
     then
       
       # Set patterns to compare new word against
-      patterna="[[:alpha:]]${lastword:1:4}"
-      patternb="${lastword:0:1}[[:alpha:]]${lastword:2:4}"
-      patternc="${lastword:0:2}[[:alpha:]]${lastword:3:4}"
+      patterna="[[:alpha:]]${lastword:1}"
+      patternb="${lastword:0:1}[[:alpha:]]${lastword:2}"
+      patternc="${lastword:0:2}[[:alpha:]]${lastword:3}"
       patternd="${lastword:0:3}[[:alpha:]]"
       
       # If the word is not spelled correctly then notify the user and don't try to use the word
@@ -62,6 +64,11 @@ else # If a word has been given
       # If there are no previous words then accept without pattern check
       if [ "a$lastword" = "a" ] || [ -z "$lastword" ]
       then
+        if [ "$3" = "$modulename" ]
+        then
+          echo "PRIVMSG $2 Please give an argument to this module."
+          continue
+        fi
         echo $3 >> $wordhist
         echo "PRIVMSG $2 $1 has changed the word to $3!"
       else
